@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SBR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green:       #6dbf8a;
+      --green-light: #c8f0d8;
+      --green-dark:  #3a8f5c;
+      --pink:        #f78fb3;
+      --pink-light:  #fde8f0;
+      --pink-dark:   #d9608a;
+      --bg:          #f7fdf9;
+      --card:        #ffffff;
+      --text:        #2d4a38;
+      --muted:       #7a9e89;
+      --shadow:      0 4px 20px rgba(109,191,138,0.15);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* NAV */
+    nav {
+      background: linear-gradient(135deg,var(--green),var(--pink));
+      padding: 0 1.5rem;
+      display: flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+      position: sticky; top:0; z-index:100;
+    }
+    .nav-brand { font-family:'Playfair Display',serif; font-size:1.5rem; color:#fff; text-decoration:none; padding:1rem 0; letter-spacing:0.5px; }
+    .nav-links { display:flex; gap:0.25rem; flex-wrap:wrap; padding:0.5rem 0; }
+    .nav-links a { color:rgba(255,255,255,0.92); text-decoration:none; padding:0.4rem 0.9rem; border-radius:20px; font-weight:600; font-size:0.9rem; transition:background 0.2s; cursor:pointer; }
+    .nav-links a:hover, .nav-links a.active { background:rgba(255,255,255,0.25); color:#fff; }
+
+    /* FLASH */
+    .flashes { padding:0.75rem 1.5rem; }
+    .flash { padding:0.8rem 1.2rem; border-radius:12px; margin-bottom:0.5rem; font-weight:600; font-size:0.92rem; }
+    .flash.success { background:var(--green-light); color:var(--green-dark); border-left:4px solid var(--green); }
+    .flash.error   { background:#fde8f0; color:var(--pink-dark); border-left:4px solid var(--pink); }
+
+    /* MAIN */
+    main { padding:2rem 1.5rem; max-width:1100px; margin:0 auto; }
+
+    /* CARDS */
+    .card { background:var(--card); border-radius:20px; box-shadow:var(--shadow); padding:1.5rem; margin-bottom:1.5rem; }
+    h1,h2,h3 { font-family:'Playfair Display',serif; color:var(--green-dark); }
+    h1 { font-size:2rem; margin-bottom:0.5rem; }
+    h2 { font-size:1.5rem; margin-bottom:1rem; }
+    h3 { font-size:1.15rem; margin-bottom:0.5rem; }
+
+    /* BUTTONS */
+    .btn { display:inline-block; padding:0.55rem 1.4rem; border-radius:25px; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.95rem; text-decoration:none; transition:transform 0.15s, box-shadow 0.15s; }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+    .btn-green  { background:linear-gradient(135deg,var(--green),var(--green-dark)); color:#fff; }
+    .btn-pink   { background:linear-gradient(135deg,var(--pink),var(--pink-dark)); color:#fff; }
+    .btn-outline{ background:transparent; border:2px solid var(--green); color:var(--green-dark); }
+    .btn-danger { background:#ff6b6b; color:#fff; }
+    .btn-sm     { padding:0.35rem 0.9rem; font-size:0.82rem; }
+
+    /* FORMS */
+    input[type=text], input[type=password], textarea, select {
+      width:100%; padding:0.75rem 1rem; border:2px solid var(--green-light); border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:0.95rem; color:var(--text); background:#fff;
+      transition:border-color 0.2s; margin-bottom:0.8rem;
+    }
+    input:focus, textarea:focus { outline:none; border-color:var(--green); }
+    label { font-weight:600; font-size:0.9rem; color:var(--muted); display:block; margin-bottom:0.3rem; }
+
+    /* GRIDS */
+    .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; }
+    .grid-3 { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem; }
+
+    /* FOOTER */
+    footer { text-align:center; padding:1.5rem; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--green-light); margin-top:2rem; }
+    footer span { color:var(--pink-dark); }
+
+    /* BADGE */
+    .badge { display:inline-block; padding:0.2rem 0.7rem; border-radius:20px; font-size:0.75rem; font-weight:700; }
+    .badge-green { background:var(--green-light); color:var(--green-dark); }
+    .badge-pink  { background:var(--pink-light); color:var(--pink-dark); }
+
+    /* PAGES */
+    .page { display:none; }
+    .page.active { display:block; }
+
+    /* ── HOME ── */
+    .hero {
+      background:linear-gradient(135deg,var(--green-light) 0%,var(--pink-light) 100%);
+      border-radius:24px; padding:4rem 2rem; text-align:center; margin-bottom:2rem;
+      position:relative; overflow:hidden; animation:fadeIn 0.8s ease;
+    }
+    .hero::before {
+      content:''; position:absolute; inset:0;
+      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236dbf8a' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .hero-emoji { font-size:3.5rem; margin-bottom:1rem; display:block; animation:bounce 2s infinite; }
+    .hero h1 {
+      font-size:2.5rem;
+      background:linear-gradient(135deg,var(--green-dark),var(--pink-dark));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      margin-bottom:0.75rem;
+    }
+    .hero p { font-size:1.15rem; color:var(--muted); max-width:500px; margin:0 auto 1.5rem; }
+    .hero-btns { display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap; }
+
+    .feature-card { background:#fff; border-radius:20px; box-shadow:var(--shadow); padding:1.5rem; text-align:center; transition:transform 0.2s; }
+    .feature-card:hover { transform:translateY(-5px); }
+    .feature-icon { font-size:2.5rem; margin-bottom:0.75rem; }
+    .feature-card h3 { font-size:1.1rem; margin-bottom:0.4rem; }
+    .feature-card p { color:var(--muted); font-size:0.9rem; }
+
+    .media-strip { display:flex; gap:0.75rem; overflow-x:auto; padding-bottom:0.5rem; }
+    .media-strip-item { flex:0 0 160px; height:120px; border-radius:14px; overflow:hidden; }
+    .media-strip-item img { width:100%; height:100%; object-fit:cover; }
+
+    /* ── GALLERY ── */
+    .media-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem; }
+    .media-card { background:#fff; border-radius:18px; overflow:hidden; box-shadow:var(--shadow); transition:transform 0.2s; cursor:pointer; }
+    .media-card:hover { transform:translateY(-4px); }
+    .media-card img { width:100%; height:180px; object-fit:cover; display:block; }
+    .media-info { padding:0.75rem; }
+    .media-info p { font-size:0.88rem; color:var(--muted); }
+    .media-info small { font-size:0.78rem; color:#bbb; }
+    .empty-state { text-align:center; padding:4rem 2rem; color:var(--muted); }
+    .empty-state div { font-size:3rem; margin-bottom:1rem; }
+
+    /* Lightbox */
+    .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999; justify-content:center; align-items:center; padding:1rem; }
+    .lightbox.open { display:flex; }
+    .lightbox img { max-width:95vw; max-height:85vh; border-radius:14px; object-fit:contain; }
+    .lightbox-close { position:fixed; top:1rem; right:1.2rem; font-size:2rem; color:#fff; cursor:pointer; background:rgba(255,255,255,0.15); border:none; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; }
+
+    /* ── MESSAGES ── */
+    .msg-form { background:linear-gradient(135deg,var(--green-light),var(--pink-light)); border-radius:20px; padding:1.5rem; margin-bottom:2rem; }
+    .msg-form h2 { margin-bottom:1rem; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+    .msg-bubble { background:#fff; border-radius:16px; padding:1rem 1.2rem; margin-bottom:0.75rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); border-left:4px solid var(--pink); animation:slideIn 0.3s ease; }
+    .msg-bubble:nth-child(even) { border-left-color:var(--green); }
+    .msg-header { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap; }
+    .msg-name { font-weight:700; color:var(--green-dark); }
+    .msg-time { font-size:0.78rem; color:#bbb; }
+    .msg-text { color:var(--text); font-size:0.95rem; line-height:1.5; }
+    .avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--green),var(--pink)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; flex-shrink:0; }
+
+    /* ── UPLOAD PAGE ── */
+    .upload-hero { background:linear-gradient(135deg,var(--pink-light) 0%,var(--green-light) 100%); border-radius:24px; padding:2.5rem 2rem; text-align:center; margin-bottom:2rem; }
+    .upload-hero h1 { font-size:2rem; margin-bottom:0.5rem; }
+    .upload-hero p { color:var(--muted); font-size:1rem; }
+    .drop-zone { border:3px dashed var(--pink); border-radius:20px; padding:3rem 2rem; text-align:center; background:var(--pink-light); cursor:pointer; transition:all 0.2s; margin-bottom:1rem; }
+    .drop-zone:hover { background:#f9c7d8; border-color:var(--pink-dark); transform:scale(1.01); }
+    .drop-zone .dz-icon { font-size:3rem; margin-bottom:0.75rem; }
+    .drop-zone p { color:var(--muted); font-size:0.9rem; margin-top:0.4rem; }
+    #preview-area { display:none; margin:1rem 0; border-radius:14px; overflow:hidden; max-height:260px; background:#000; text-align:center; }
+    #preview-area img { max-height:260px; max-width:100%; object-fit:contain; }
+    .form-section { background:#fff; border-radius:20px; box-shadow:var(--shadow); padding:1.5rem; margin-bottom:1.5rem; }
+    .user-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1rem; }
+    .user-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); transition:transform 0.2s; }
+    .user-card:hover { transform:translateY(-4px); }
+    .user-card img { width:100%; height:160px; object-fit:cover; display:block; }
+    .user-card-info { padding:0.65rem 0.75rem; }
+    .user-card-info .name { font-weight:700; color:var(--pink-dark); font-size:0.85rem; }
+    .user-card-info .caption { color:var(--muted); font-size:0.82rem; margin-top:0.2rem; }
+    .user-card-info .time { color:#ccc; font-size:0.75rem; }
+
+    /* ── ADMIN ── */
+    .admin-header { background:linear-gradient(135deg,var(--green-dark),var(--pink-dark)); border-radius:20px; padding:1.5rem; color:#fff; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; }
+    .admin-header h1 { color:#fff; margin:0; font-size:1.6rem; }
+    .admin-header p { color:rgba(255,255,255,0.8); margin:0; font-size:0.9rem; }
+    .section-title { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--green-dark); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0.75rem; margin-bottom:1.5rem; }
+    .stat-card { background:#fff; border-radius:16px; padding:1.2rem; text-align:center; box-shadow:var(--shadow); }
+    .stat-card .stat-emoji { font-size:2rem; margin-bottom:0.3rem; }
+    .stat-card .stat-num { font-size:1.6rem; font-weight:800; color:var(--green-dark); }
+    .stat-card .stat-label { font-size:0.8rem; color:var(--muted); }
+    .upload-area { border:2.5px dashed var(--green); border-radius:16px; padding:2rem; text-align:center; cursor:pointer; background:var(--green-light); transition:background 0.2s; margin-bottom:1rem; }
+    .upload-area:hover { background:#b7ead0; }
+    .upload-area div { font-size:2rem; margin-bottom:0.5rem; }
+    .media-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    .media-table th { background:var(--green-light); padding:0.6rem 0.75rem; text-align:left; color:var(--green-dark); font-weight:700; }
+    .media-table td { padding:0.6rem 0.75rem; border-bottom:1px solid #f0f0f0; }
+    .media-table tr:hover td { background:#fafafa; }
+    .thumb { width:50px; height:40px; object-fit:cover; border-radius:8px; }
+    .table-wrap { overflow-x:auto; }
+
+    /* ADMIN LOGIN */
+    .login-wrap { max-width:420px; margin:4rem auto; }
+    .login-wrap .card { text-align:center; }
+    .login-icon { font-size:3rem; margin-bottom:1rem; }
+
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+    @media(max-width:600px){
+      h1{font-size:1.6rem;} main{padding:1rem;} .form-row{grid-template-columns:1fr;} .admin-header{flex-direction:column;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" onclick="showPage('home')">🌸 SBR</a>
+  <div class="nav-links">
+    <a onclick="showPage('home')" id="nav-home" class="active">Home</a>
+    <a onclick="showPage('gallery')" id="nav-gallery">Gallery</a>
+    <a onclick="showPage('messages')" id="nav-messages">Messages</a>
+    <a onclick="showPage('upload')" id="nav-upload">Upload</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HOME ═══════════════════ -->
+<div class="page active" id="page-home">
+  <main>
+    <div class="hero">
+      <span class="hero-emoji">🌸</span>
+      <h1>Welcome to SBR!</h1>
+      <p>A cozy space to share photos, videos, and sweet messages with everyone 💚</p>
+      <div class="hero-btns">
+        <a onclick="showPage('gallery')" class="btn btn-green">📸 View Gallery</a>
+        <a onclick="showPage('messages')" class="btn btn-pink">💬 Leave a Message</a>
+        <a onclick="showPage('upload')" class="btn btn-green">📤 Share Content</a>
+      </div>
+    </div>
+
+    <h2>What's here?</h2>
+    <div class="grid-3" style="margin-bottom:2rem;">
+      <div class="feature-card">
+        <div class="feature-icon">📸</div>
+        <h3>Photo &amp; Video Gallery</h3>
+        <p>Browse photos and videos shared by the community.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Messages</h3>
+        <p>Leave a friendly note or read what others have shared.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📤</div>
+        <h3>Share Your Content</h3>
+        <p>Upload your own photos and videos to share with everyone.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📌 Recent Uploads</h2>
+      <div class="media-strip" id="home-recent-uploads">
+        <p style="color:var(--muted);font-size:0.9rem;padding:1rem 0;">No uploads yet. Go to the Upload page to add some! 🖼️</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💬 Recent Messages</h2>
+      <div id="home-recent-msgs">
+        <p style="color:var(--muted);">No messages yet. Be the first! 👋</p>
+        <a onclick="showPage('messages')" class="btn btn-pink btn-sm" style="margin-top:0.5rem;">Write a message</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════ GALLERY ═══════════════════ -->
+<div class="page" id="page-gallery">
+  <main>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;">
+      <div>
+        <h1>📸 Gallery</h1>
+        <p style="color:var(--muted);" id="gallery-count">0 item(s) shared</p>
+      </div>
+      <a onclick="showPage('messages')" class="btn btn-pink">💬 Messages</a>
+    </div>
+    <div class="media-grid" id="gallery-grid">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div>🖼️</div>
+        <h2>No uploads yet</h2>
+        <p>Nothing has been shared yet. Be the first! 🌸</p>
+        <a onclick="showPage('upload')" class="btn btn-pink" style="margin-top:1rem;">📤 Share Something</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" src="" onclick="event.stopPropagation()"/>
+</div>
+
+<!-- ═══════════════════ MESSAGES ═══════════════════ -->
+<div class="page" id="page-messages">
+  <main>
+    <h1 style="margin-bottom:1.5rem;">💬 Messages</h1>
+    <div class="msg-form">
+      <h2>Leave a Message</h2>
+      <div class="form-row">
+        <div>
+          <label>Your Name</label>
+          <input type="text" id="msg-name" placeholder="e.g. Alex" maxlength="50"/>
+        </div>
+        <div></div>
+      </div>
+      <label>Your Message</label>
+      <textarea id="msg-text" rows="3" placeholder="Write something kind... 🌸" maxlength="500"></textarea>
+      <button class="btn btn-pink" onclick="postMessage()">Send Message 💌</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <h2 id="msgs-count-heading">All Messages (0)</h2>
+    </div>
+    <div id="messages-list">
+      <div class="empty-state">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem;">📭</div>
+        <p>No messages yet. Be the first to say hello!</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════ UPLOAD ═══════════════════ -->
+<div class="page" id="page-upload">
+  <main>
+    <div class="upload-hero">
+      <h1>📤 Share Your Content</h1>
+      <p>Upload a photo or video to share with the SBR community!</p>
+    </div>
+    <div class="form-section">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('userFile').click()">
+        <div class="dz-icon">🖼️</div>
+        <strong>Tap to choose a photo or video</strong>
+        <p>JPG, PNG, GIF, MP4 — max 50MB</p>
+        <input type="file" id="userFile" accept="image/*,video/*" onchange="handleFileSelect(this)" style="display:none"/>
+      </div>
+      <div id="preview-area"><img id="prev-img" src="" style="display:none"/></div>
+      <div id="chosen-name" style="font-size:0.85rem;color:var(--green-dark);font-weight:600;margin:0.4rem 0 0.8rem;text-align:center;"></div>
+      <label>Your Name</label>
+      <input type="text" id="upload-username" placeholder="e.g. Sumanth" maxlength="50"/>
+      <label>Caption (optional)</label>
+      <input type="text" id="upload-caption" placeholder="Say something about your upload..." maxlength="150"/>
+      <button class="btn btn-pink" style="width:100%;" onclick="submitUpload()">Share Now 🚀</button>
+      <div id="upload-success" style="display:none;margin-top:1rem;" class="flash success">✅ Uploaded successfully!</div>
+    </div>
+    <h2 style="margin-bottom:1rem;">🌍 Community Uploads</h2>
+    <div class="user-grid" id="community-grid">
+      <div style="text-align:center;padding:3rem;color:var(--muted);grid-column:1/-1;">
+        <div style="font-size:3rem;margin-bottom:1rem;">📭</div>
+        <p>No community uploads yet. Be the first to share! 🌸</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════ ADMIN LOGIN ═══════════════════ -->
+<div class="page" id="page-admin-login">
+  <main>
+    <div class="login-wrap">
+      <div class="card">
+        <div class="login-icon">🛡️</div>
+        <h2>Admin Login</h2>
+        <p style="color:var(--muted);margin-bottom:1.5rem;font-size:0.9rem;">Enter your password to access the admin panel.</p>
+        <label>Password</label>
+        <input type="password" id="admin-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkAdmin()"/>
+        <div id="admin-login-err" style="display:none;color:var(--pink-dark);font-size:0.88rem;margin-bottom:0.75rem;"></div>
+        <button class="btn btn-green" style="width:100%;" onclick="checkAdmin()">Login 🔐</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════════ ADMIN PANEL ═══════════════════ -->
+<div class="page" id="page-admin">
+  <main>
+    <div class="admin-header">
+      <div>
+        <h1>🛡️ Admin Panel</h1>
+        <p>Manage your website content</p>
+      </div>
+      <button class="btn btn-outline" style="border-color:#fff;color:#fff;" onclick="adminLogout()">Logout</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card"><div class="stat-emoji">🖼️</div><div class="stat-num" id="stat-images">0</div><div class="stat-label">Images</div></div>
+      <div class="stat-card"><div class="stat-emoji">🎬</div><div class="stat-num" id="stat-videos">0</div><div class="stat-label">Videos</div></div>
+      <div class="stat-card"><div class="stat-emoji">💬</div><div class="stat-num" id="stat-msgs">0</div><div class="stat-label">Messages</div></div>
+      <div class="stat-card"><div class="stat-emoji">📁</div><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total Files</div></div>
+    </div>
+
+    <!-- Welcome editor -->
+    <div class="card">
+      <div class="section-title">🌸 Edit Welcome Message</div>
+      <label>Main Welcome Heading</label>
+      <input type="text" id="admin-welcome-msg" value="Welcome to SBR!" maxlength="100"/>
+      <label>Subtitle / Description</label>
+      <input type="text" id="admin-welcome-sub" value="A cozy space to share photos, videos, and sweet messages with everyone 💚" maxlength="200"/>
+      <button class="btn btn-green" onclick="updateWelcome()">Update Message ✅</button>
+      <div id="welcome-saved" style="display:none;margin-top:0.5rem;" class="flash success">Saved! ✅</div>
+    </div>
+
+    <!-- Upload -->
+    <div class="card">
+      <div class="section-title">📤 Upload Photo or Video</div>
+      <div class="upload-area" onclick="document.getElementById('adminFile').click()">
+        <div>📁</div>
+        <p><strong>Click to choose a file</strong></p>
+        <p style="font-size:0.82rem;color:var(--muted);">Images: JPG, PNG, GIF &nbsp;|&nbsp; Videos: MP4, MOV (max 100MB)</p>
+        <div id="admin-file-name" style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem;">No file selected</div>
+        <input type="file" id="adminFile" accept="image/*,video/*" style="display:none" onchange="document.getElementById('admin-file-name').textContent=this.files[0]?.name||'No file selected'"/>
+      </div>
+      <label>Caption (optional)</label>
+      <input type="text" id="admin-caption" placeholder="Add a description..." maxlength="150"/>
+      <button class="btn btn-pink" onclick="adminUpload()">Upload 🚀</button>
+      <div id="admin-upload-ok" style="display:none;margin-top:0.5rem;" class="flash success">Uploaded! ✅</div>
+    </div>
+
+    <!-- Manage media -->
+    <div class="card">
+      <div class="section-title">🗂️ Manage Uploads (<span id="manage-count">0</span>)</div>
+      <div class="table-wrap">
+        <table class="media-table">
+          <thead><tr><th>Preview</th><th>Filename</th><th>Type</th><th>Caption</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="admin-media-tbody"><tr><td colspan="6" style="color:var(--muted);padding:1rem;">No uploads yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Manage messages -->
+    <div class="card">
+      <div class="section-title">💬 Manage Messages (<span id="manage-msg-count">0</span>)</div>
+      <div class="table-wrap">
+        <table class="media-table">
+          <thead><tr><th>Name</th><th>Message</th><th>Time</th><th>Action</th></tr></thead>
+          <tbody id="admin-msgs-tbody"><tr><td colspan="4" style="color:var(--muted);padding:1rem;">No messages yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>Made with <span>♥</span> &nbsp;|&nbsp; <strong>Sumanth Technologies</strong> &nbsp;|&nbsp; SBR &copy; 2026</footer>
+
+<script>
+// ── DATA STORE ──
+const DB = {
+  media: [],       // {id, filename, dataUrl, type, caption, time}
+  userMedia: [],   // {id, username, filename, dataUrl, type, caption, time}
+  messages: [],    // {id, name, text, time}
+  welcome: {
+    message: "Welcome to SBR!",
+    subtitle: "A cozy space to share photos, videos, and sweet messages with everyone 💚"
+  }
+};
+const ADMIN_PASS = "sbr2026";
+let adminLoggedIn = false;
+
+// ── NAVIGATION ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  if (name === 'gallery') renderGallery();
+  if (name === 'messages') renderMessages();
+  if (name === 'upload') renderCommunityUploads();
+  if (name === 'home') renderHome();
+  if (name === 'admin') renderAdmin();
+  window.scrollTo(0,0);
+}
+
+// Hook nav links properly
+document.querySelectorAll('.nav-links a').forEach(a => {
+  a.addEventListener('click', () => {
+    const pages = ['home','gallery','messages','upload'];
+    pages.forEach(p => {
+      if (document.getElementById('nav-'+p) === a) showPage(p);
+    });
+  });
+});
+
+// ── ADMIN (hidden: click footer 5 times) ──
+let footerClicks = 0;
+document.querySelector('footer').addEventListener('click', () => {
+  footerClicks++;
+  if (footerClicks >= 5) {
+    footerClicks = 0;
+    if (adminLoggedIn) showPage('admin');
+    else showPage('admin-login');
+  }
+});
+
+function checkAdmin() {
+  const pw = document.getElementById('admin-pw').value;
+  if (pw === ADMIN_PASS) {
+    adminLoggedIn = true;
+    document.getElementById('admin-pw').value = '';
+    showPage('admin');
+  } else {
+    document.getElementById('admin-login-err').textContent = '❌ Wrong password. Try again.';
+    document.getElementById('admin-login-err').style.display = 'block';
+  }
+}
+function adminLogout() { adminLoggedIn = false; showPage('home'); }
+
+// ── TIME ──
+function nowStr() {
+  const d = new Date();
+  return d.toLocaleString('en-IN', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+// ── MESSAGES ──
+function postMessage() {
+  const name = document.getElementById('msg-name').value.trim() || 'Anonymous';
+  const text = document.getElementById('msg-text').value.trim();
+  if (!text) { alert('Please write a message! 🌸'); return; }
+  DB.messages.push({ id: Date.now(), name, text, time: nowStr() });
+  document.getElementById('msg-name').value = '';
+  document.getElementById('msg-text').value = '';
+  renderMessages();
+  renderHome();
+}
+
+function renderMessages() {
+  const list = document.getElementById('messages-list');
+  document.getElementById('msgs-count-heading').textContent = 'All Messages (' + DB.messages.length + ')';
+  if (!DB.messages.length) {
+    list.innerHTML = '<div class="empty-state"><div style="font-size:2.5rem;margin-bottom:0.75rem;">📭</div><p>No messages yet. Be the first to say hello!</p></div>';
+    return;
+  }
+  list.innerHTML = [...DB.messages].reverse().map(m => `
+    <div class="msg-bubble">
+      <div class="msg-header">
+        <div class="avatar">${m.name[0].toUpperCase()}</div>
+        <span class="msg-name">${esc(m.name)}</span>
+        <span class="msg-time">${m.time}</span>
+      </div>
+      <p class="msg-text">${esc(m.text)}</p>
+    </div>
+  `).join('');
+}
+
+// ── UPLOAD (user) ──
+let pendingFile = null;
+
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  pendingFile = file;
+  document.getElementById('chosen-name').textContent = '📎 ' + file.name;
+  const preview = document.getElementById('preview-area');
+  const img = document.getElementById('prev-img');
+  preview.style.display = 'block';
+  const url = URL.createObjectURL(file);
+  if (file.type.startsWith('image')) {
+    img.src = url; img.style.display = 'block';
+  }
+}
+
+function submitUpload() {
+  if (!pendingFile) { alert('Please select a file first!'); return; }
+  const username = document.getElementById('upload-username').value.trim() || 'Anonymous';
+  const caption  = document.getElementById('upload-caption').value.trim();
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const type = pendingFile.type.startsWith('video') ? 'video' : 'image';
+    DB.userMedia.push({ id: Date.now(), username, filename: pendingFile.name, dataUrl: e.target.result, type, caption, time: nowStr() });
+    pendingFile = null;
+    document.getElementById('userFile').value = '';
+    document.getElementById('preview-area').style.display = 'none';
+    document.getElementById('chosen-name').textContent = '';
+    document.getElementById('upload-username').value = '';
+    document.getElementById('upload-caption').value = '';
+    const ok = document.getElementById('upload-success');
+    ok.style.display = 'block'; setTimeout(() => ok.style.display='none', 3000);
+    renderCommunityUploads();
+    renderHome();
+  };
+  reader.readAsDataURL(pendingFile);
+}
+
+function renderCommunityUploads() {
+  const grid = document.getElementById('community-grid');
+  if (!DB.userMedia.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted);grid-column:1/-1;"><div style="font-size:3rem;margin-bottom:1rem;">📭</div><p>No community uploads yet. Be the first to share! 🌸</p></div>';
+    return;
+  }
+  grid.innerHTML = [...DB.userMedia].reverse().map(item => `
+    <div class="user-card">
+      ${item.type==='image' ? `<img src="${item.dataUrl}" alt="${esc(item.caption)}"/>` : `<div style="width:100%;height:160px;background:#222;display:flex;align-items:center;justify-content:center;font-size:2rem;">🎬</div>`}
+      <div class="user-card-info">
+        <div class="name">👤 ${esc(item.username)}</div>
+        ${item.caption ? `<div class="caption">${esc(item.caption)}</div>` : ''}
+        <div class="time">${item.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── GALLERY ──
+function renderGallery() {
+  const all = [...DB.media, ...DB.userMedia];
+  document.getElementById('gallery-count').textContent = all.length + ' item(s) shared';
+  const grid = document.getElementById('gallery-grid');
+  if (!all.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div>🖼️</div><h2>No uploads yet</h2><p>Nothing has been shared yet. Be the first! 🌸</p><a onclick="showPage(\'upload\')" class="btn btn-pink" style="margin-top:1rem;">📤 Share Something</a></div>';
+    return;
+  }
+  grid.innerHTML = [...all].reverse().map(item => `
+    <div class="media-card" onclick="openLightbox('${item.dataUrl}','${item.type}')">
+      ${item.type==='image' ? `<img src="${item.dataUrl}" alt="${esc(item.caption||'')}"/>` : `<div style="width:100%;height:180px;background:#222;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎬</div>`}
+      <div class="media-info">
+        ${item.caption ? `<p>${esc(item.caption)}</p>` : ''}
+        <small>${item.type==='video'?'🎬 Video':'🖼️ Image'} ${item.username ? '&nbsp;·&nbsp; 👤 '+esc(item.username) : ''} &nbsp;·&nbsp; ${item.time}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openLightbox(src, type) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lb-img');
+  if (type === 'image') { img.src = src; img.style.display='block'; }
+  lb.classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lb-img').src='';
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+
+// ── HOME ──
+function renderHome() {
+  // Update welcome
+  document.querySelector('.hero h1').textContent = DB.welcome.message;
+  document.querySelector('.hero p').textContent = DB.welcome.subtitle;
+  // Recent uploads
+  const all = [...DB.media, ...DB.userMedia].slice(-6).reverse();
+  const strip = document.getElementById('home-recent-uploads');
+  if (!all.length) {
+    strip.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;padding:1rem 0;">No uploads yet. Go to the Upload page to add some! 🖼️</p>';
+  } else {
+    strip.innerHTML = all.map(item => `
+      <div class="media-strip-item">
+        ${item.type==='image' ? `<img src="${item.dataUrl}" alt=""/>` : `<div style="width:100%;height:100%;background:#222;display:flex;align-items:center;justify-content:center;font-size:2rem;">🎬</div>`}
+      </div>
+    `).join('');
+  }
+  // Recent messages
+  const recentMsgs = [...DB.messages].reverse().slice(0,3);
+  const msgDiv = document.getElementById('home-recent-msgs');
+  if (!recentMsgs.length) {
+    msgDiv.innerHTML = '<p style="color:var(--muted);">No messages yet. Be the first! 👋</p><a onclick="showPage(\'messages\')" class="btn btn-pink btn-sm" style="margin-top:0.5rem;">Write a message</a>';
+  } else {
+    msgDiv.innerHTML = recentMsgs.map(m => `
+      <div style="border-left:3px solid var(--pink);padding:0.5rem 0.75rem;margin-bottom:0.75rem;background:var(--pink-light);border-radius:0 10px 10px 0;">
+        <strong style="color:var(--pink-dark);">${esc(m.name)}</strong>
+        <span style="color:var(--muted);font-size:0.8rem;margin-left:0.5rem;">${m.time}</span>
+        <p style="margin-top:0.3rem;font-size:0.95rem;">${esc(m.text)}</p>
+      </div>
+    `).join('') + `<a onclick="showPage('messages')" class="btn btn-outline btn-sm">See all messages →</a>`;
+  }
+}
+
+// ── ADMIN ──
+function adminUpload() {
+  const file = document.getElementById('adminFile').files[0];
+  if (!file) { alert('Please select a file!'); return; }
+  const caption = document.getElementById('admin-caption').value.trim();
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const type = file.type.startsWith('video') ? 'video' : 'image';
+    DB.media.push({ id: Date.now(), filename: file.name, dataUrl: e.target.result, type, caption, time: nowStr() });
+    document.getElementById('adminFile').value = '';
+    document.getElementById('admin-file-name').textContent = 'No file selected';
+    document.getElementById('admin-caption').value = '';
+    const ok = document.getElementById('admin-upload-ok');
+    ok.style.display='block'; setTimeout(() => ok.style.display='none', 3000);
+    renderAdmin();
+    renderHome();
+  };
+  reader.readAsDataURL(file);
+}
+
+function deleteMedia(id) {
+  if (!confirm('Delete this file permanently?')) return;
+  DB.media = DB.media.filter(m => m.id !== id);
+  DB.userMedia = DB.userMedia.filter(m => m.id !== id);
+  renderAdmin(); renderHome(); renderGallery(); renderCommunityUploads();
+}
+
+function deleteMessage(id) {
+  if (!confirm('Delete this message?')) return;
+  DB.messages = DB.messages.filter(m => m.id !== id);
+  renderAdmin(); renderMessages(); renderHome();
+}
+
+function updateWelcome() {
+  DB.welcome.message  = document.getElementById('admin-welcome-msg').value.trim() || 'Welcome to SBR!';
+  DB.welcome.subtitle = document.getElementById('admin-welcome-sub').value.trim();
+  renderHome();
+  const ok = document.getElementById('welcome-saved');
+  ok.style.display='block'; setTimeout(() => ok.style.display='none', 3000);
+}
+
+function renderAdmin() {
+  const allMedia = [...DB.media, ...DB.userMedia];
+  const images = allMedia.filter(m => m.type==='image').length;
+  const videos = allMedia.filter(m => m.type==='video').length;
+  document.getElementById('stat-images').textContent = images;
+  document.getElementById('stat-videos').textContent = videos;
+  document.getElementById('stat-msgs').textContent = DB.messages.length;
+  document.getElementById('stat-total').textContent = allMedia.length;
+  document.getElementById('manage-count').textContent = allMedia.length;
+  document.getElementById('manage-msg-count').textContent = DB.messages.length;
+
+  // Media table
+  const tbody = document.getElementById('admin-media-tbody');
+  if (!allMedia.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);padding:1rem;">No uploads yet. Use the form above to add media.</td></tr>';
+  } else {
+    tbody.innerHTML = [...allMedia].reverse().map(item => `
+      <tr>
+        <td>${item.type==='image' ? `<img class="thumb" src="${item.dataUrl}" alt=""/>` : `<div class="thumb" style="background:#222;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🎬</div>`}</td>
+        <td>${esc(item.filename)}</td>
+        <td><span class="badge ${item.type==='video'?'badge-pink':'badge-green'}">${item.type}</span></td>
+        <td>${esc(item.caption||'—')}</td>
+        <td>${item.time}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteMedia(${item.id})">🗑️ Delete</button></td>
+      </tr>
+    `).join('');
+  }
+
+  // Messages table
+  const mtbody = document.getElementById('admin-msgs-tbody');
+  if (!DB.messages.length) {
+    mtbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted);padding:1rem;">No messages yet.</td></tr>';
+  } else {
+    mtbody.innerHTML = [...DB.messages].reverse().map(m => `
+      <tr>
+        <td><strong>${esc(m.name)}</strong></td>
+        <td>${esc(m.text.length>80 ? m.text.slice(0,80)+'...' : m.text)}</td>
+        <td style="white-space:nowrap;">${m.time}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteMessage(${m.id})">🗑️</button></td>
+      </tr>
+    `).join('');
+  }
+
+  // Sync welcome inputs
+  document.getElementById('admin-welcome-msg').value = DB.welcome.message;
+  document.getElementById('admin-welcome-sub').value = DB.welcome.subtitle;
+}
+
+// ── HELPERS ──
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Drag & drop on upload
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.transform='scale(1.01)'; });
+dz.addEventListener('dragleave', () => { dz.style.transform=''; });
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.style.transform='';
+  const f = e.dataTransfer.files[0];
+  if (f) { document.getElementById('userFile').files = e.dataTransfer.files; handleFileSelect(document.getElementById('userFile')); }
+});
+
+// Init
+renderHome();
+</script>
+</body>
+</html>
